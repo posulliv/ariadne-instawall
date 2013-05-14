@@ -5,7 +5,7 @@ node['php']['directives']['memory_limit'] = "292M"
 
 web_app site_url do
   cookbook "ariadne"
-  template "sites.conf.erb"
+  template "drupal-site.conf.erb"
   server_name site_url
   server_aliases [ "*.#{site_url}" ]
   docroot "/mnt/www/html/#{repo}"
@@ -27,7 +27,7 @@ end
 
 git "/vagrant/data/profiles/#{repo}" do
   user "vagrant"
-  repository "https://github.com/wet-boew/#{repo}.git"
+  repository "git@bitbucket.org:blinkreaction/#{repo}.git"
   reference branch
   enable_submodules true
   action :sync
@@ -38,17 +38,10 @@ bash "Installing site..." do
   user "vagrant"
   group "vagrant"
   code <<-"EOH"
-<<<<<<< HEAD
-    drush site-install wetkit wetkit_theme_form.theme=wetkit_adaptivetheme \
+    drush site-install instawall \
       --root=/mnt/www/html/#{repo} \
-      --db-url=mysql://root:root@localhost/wetkit \
+      --db-url=mysql://root:root@localhost/#{repo} \
       --account-pass=S4mpleP^ssword \
-=======
-    drush site-install wetkit wetkit_wetboew_selection_form.theme=wetkit_adaptivetheme \
-      --root=/mnt/www/html/#{repo} \
-      --db-url=mysql://root:root@localhost/wetkit \
-      --account-pass=WetKit@2012 \
->>>>>>> 2dc0dda408a26e08c2b2f2a79cc8028394dc139a
       --site-name=#{repo} \
       --yes
   EOH
@@ -60,15 +53,14 @@ end
 bash "Building site..." do
   user "vagrant"
   group "vagrant"
-  cwd "/vagrant/data/profiles/#{repo}"
+  cwd "/vagrant/data/profiles/#{repo}/docroot/profiles/#{repo}"
   code <<-"EOH"
-    drush make build-wetkit.make /mnt/www/html/#{repo} \
+    drush make build-instawall.make /mnt/www/html/#{repo} \
       --working-copy \
       --prepare-install \
       --no-gitinfofile \
       --yes
   EOH
-  not_if "test -d /mnt/www/html/#{repo}"
   environment({
     'HOME' => '/home/vagrant',
   })
